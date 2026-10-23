@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Team Invitation | Stockwise Africa</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; color: #101828; }
+  .font-heading { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+</style>
+</head>
+<body>
+<div class="min-h-screen lg:grid lg:grid-cols-2">
+
+  <!-- Left: brand panel (desktop only) -->
+  <aside class="relative hidden overflow-hidden bg-gradient-to-br from-[#17396b] to-[#2358b8] p-12 text-white lg:flex lg:flex-col">
+    <span class="absolute -right-24 top-10 h-96 w-96 rounded-full border border-white/10" aria-hidden="true"></span>
+    <span class="absolute -right-4 top-32 h-64 w-64 rounded-full bg-white/5" aria-hidden="true"></span>
+
+    <img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791398404/stw.png" alt="Stockwise Africa" class="relative h-10 w-auto self-start" />
+
+    <div class="relative mt-14 max-w-md">
+      <p class="text-sm text-white/80">Inventory, simplified</p>
+      <h2 class="font-heading mt-3 text-4xl font-bold leading-tight">Join your team on Stockwise Africa</h2>
+      <p class="mt-4 text-sm text-white/80">Use the invitation link shared by your business owner to <br/>
+         securely access your assigned workspace.</p>
+
+      <ul class="mt-5 space-y-2 text-sm">
+        <li class="flex items-center gap-2"><img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791404263/Text_2.png" alt="A mark sign in green background" class="h-4 w-4" />Your role is assigned automatically</li>
+        <li class="flex items-center gap-2"><img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791404263/Text_2.png" alt="A mark sign in green background" class="h-4 w-4" />Access the right tools from day one</li>
+        <li class="flex items-center gap-2"><img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791404263/Text_2.png" alt="A mark sign in green background" class="h-4 w-4" />Work securely with the business team</li>
+      </ul>
+    </div>
+
+ 
+
+    <img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791398249/InventoryIllustration.png"
+      alt="Inventory overview showing 1,284 total items, Peak Milk stock and a low stock alert" class="relative mt-10 h-auto w-full max-w-md" />
+
+    <p class="relative mt-auto pt-8 text-xs text-white/70">Built for ambitious businesses across Nigeria</p>
+  </aside>
+
+  <!-- Right: invitation form -->
+  <main class="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10">
+    <div class="mb-6 rounded-xl bg-[#17396b] px-4 py-3 lg:hidden">
+      <img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791398404/stw.png" alt="Stockwise Africa" class="h-8 w-auto" />
+    </div>
+
+    <section class="w-full max-w-[420px] rounded-2xl bg-white p-8 shadow-xl shadow-slate-200/70">
+      <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-[#17396b]" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
+      <h1 class="font-heading mt-5 text-3xl font-bold text-[#17396b]">Team invitation</h1>
+      <p class="mt-3 text-base font-medium">Join a business</p>
+      <p class="mt-3 text-xs text-slate-500">Paste the invitation link sent to you by your business owner.</p>
+
+      <form id="invite" novalidate class="mt-6 flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="link" class="text-sm font-medium">Invitation link</label>
+          <input id="link" name="link" type="url" inputmode="url" autocomplete="off" placeholder="https://stockflow.ng/invite/..."
+            class="min-h-11 w-full rounded-lg border border-[#17396b] px-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#17396b]/30 aria-[invalid=true]:border-red-600"
+            aria-describedby="link-hint link-error" />
+          <p id="link-error" class="hidden text-xs text-red-600" role="alert"></p>
+          <p id="link-hint" class="text-[11px] text-slate-500">Invitation links are unique to you and can only be used once.</p>
+        </div>
+        <button type="submit" class="min-h-11 w-full rounded-lg bg-[#17396b] text-sm font-semibold text-white shadow-md shadow-[#17396b]/30 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17396b] focus-visible:ring-offset-2">Continue with invitation</button>
+      </form>
+
+      <div class="mt-5 flex gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </span>
+        <p class="text-[11px] leading-snug text-slate-500"><b class="block text-xs text-slate-900">Don't have an invitation link?</b>Ask your business owner to invite you from their Stockwise Africa team settings.</p>
+      </div>
+
+      <p class="mt-6 text-center text-xs">Already have an account? <a href="login.html" class="font-semibold text-[#17396b] hover:underline">Log in</a></p>
+
+      <p class="mt-5 flex items-center justify-center gap-2 border-t border-slate-200 pt-4 text-[11px] text-slate-500">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Your invitation and business information are protected.
+      </p>
+    </section>
+  </main>
+</div>
+
+<script>
+  const input = document.getElementById('link'), note = document.getElementById('link-error');
+  const fail = (m) => { note.textContent = m; note.classList.remove('hidden'); input.setAttribute('aria-invalid', 'true'); };
+
+  document.getElementById('invite').addEventListener('submit', (event) => {
+    event.preventDefault();
+    note.textContent = ''; note.classList.add('hidden'); input.removeAttribute('aria-invalid');
+
+    const value = input.value.trim();
+    if (!value) return fail('Paste your invitation link.');
+    let url;
+    try { url = new URL(value); } catch (e) { return fail('This does not look like a link. Paste the full invitation link.'); }
+    if (!/^https?:$/.test(url.protocol)) return fail('This does not look like a link. Paste the full invitation link.');
+
+    // Mock until the backend invitation endpoint exists: keep the code from the end of the link and go to Sign Up
+    const code = url.pathname.split('/').filter(Boolean).pop() || '';
+    try { sessionStorage.setItem('invite', JSON.stringify({ link: value, code })); } catch (e) {}
+    window.location.href = 'signup.html?invite=' + encodeURIComponent(code);
+  });
+</script>
+</body>
+</html>

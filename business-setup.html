@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Set up your business | Stockwise Africa</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; color: #101828; }
+  .font-heading { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+  /* The logo image is white, so this turns it dark blue on the white header */
+  .logo-navy { filter: brightness(0) saturate(100%) invert(17%) sepia(54%) saturate(1500%) hue-rotate(188deg) brightness(92%) contrast(95%); }
+</style>
+</head>
+<body class="bg-slate-50">
+
+<header class="border-b border-slate-200 bg-white">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-12 gap-y-3 px-6 py-4">
+    <img src="https://res.cloudinary.com/gzmezpec/image/upload/v1791398404/stw.png" alt="Stockwise Africa" class="logo-navy h-10 w-auto" />
+    <nav aria-label="Setup progress" class="min-w-[280px] flex-1 max-w-md text-[11px]">
+      <div class="flex justify-between"><b>Step 1 of 3</b><span class="text-slate-600">Business details</span></div>
+      <ol class="mt-1 flex items-center gap-2">
+        <li class="flex items-center gap-1.5" aria-current="step"><span class="flex h-5 w-5 items-center justify-center rounded-full bg-[#17396b] text-[10px] font-semibold text-white">1</span>Business</li>
+        <li class="h-px flex-1 bg-slate-300" aria-hidden="true"></li>
+        <li class="flex items-center gap-1.5 text-slate-500"><span class="flex h-5 w-5 items-center justify-center rounded-full border border-slate-400 text-[10px]">2</span>Role Selection</li>
+        <li class="h-px flex-1 bg-slate-300" aria-hidden="true"></li>
+        <li class="flex items-center gap-1.5 text-slate-500"><span class="flex h-5 w-5 items-center justify-center rounded-full border border-slate-400 text-[10px]">3</span>Finish</li>
+      </ol>
+    </nav>
+  </div>
+</header>
+
+<main class="mx-auto max-w-3xl px-4 pb-12 pt-6 text-center">
+  <p class="text-sm">Let's get you set up</p>
+  <h1 class="font-heading mt-1 text-4xl font-bold text-[#17396b]">Set up your business</h1>
+  <p class="mt-2 text-xs text-slate-600">Tell us a little about your business so we can personalize your inventory experience.</p>
+
+  <form id="setup" novalidate class="mt-6 text-left">
+    <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-sm font-semibold">Business information</h2>
+        <p class="text-[11px] text-slate-500">All fields required unless marked</p>
+      </div>
+      <p class="mt-1 text-xs text-slate-500">These details will appear on your invoices and reports.</p>
+
+      <div id="fields" class="mt-4 grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2"></div>
+
+      <div class="mt-5 grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2 sm:items-center">
+        <div>
+          <p class="flex items-center gap-2 text-xs font-medium">Business logo <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">Optional</span></p>
+          <p class="mt-1.5 text-[11px] text-slate-500">Add your logo to personalize receipts and documents.</p>
+        </div>
+        <div>
+          <label id="drop" for="logo" class="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#17396b] p-2.5 hover:bg-slate-50">
+            <span class="flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-[#17396b]" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="m7 9 5-5 5 5"/><path d="M4 20h16"/></svg></span>
+            <span id="logo-name" class="flex-1 truncate text-xs font-semibold">Upload logo</span>
+            <span class="text-[10px] text-slate-500">PNG, JPG or SVG</span>
+          </label>
+          <input id="logo" type="file" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml" class="sr-only" />
+          <p id="logo-error" class="mt-1 hidden text-xs text-red-600" role="alert"></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="mt-5 flex items-center justify-between">
+      <a href="./dashboard.html" id="skip" class="min-h-11 rounded-lg border border-[#17396b] bg-white px-6 text-sm font-semibold text-[#17396b] hover:bg-slate-50">Skip for now</a>
+      <a href="./role-selection.html" class="min-h-11 rounded-lg bg-[#17396b] px-10 text-sm font-semibold text-white shadow-md shadow-[#17396b]/30 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17396b] focus-visible:ring-offset-2">Continue</a>
+    </div>
+  </form>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const box = 'min-h-10 w-full rounded-lg border border-[#17396b] bg-white px-3 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#17396b]/30 aria-[invalid=true]:border-red-600';
+  const wrap = (id, label, control, full) => `<div class="flex flex-col gap-1.5 ${full ? 'sm:col-span-2' : ''}">
+    <label for="${id}" class="text-xs font-medium">${label}</label>${control}
+    <p id="${id}-error" class="hidden text-xs text-red-600" role="alert"></p></div>`;
+  const text = (id, label, placeholder, o = {}) => wrap(id, label,
+    `<input id="${id}" type="${o.type || 'text'}" placeholder="${placeholder}" value="${o.value || ''}" ${o.auto ? `autocomplete="${o.auto}"` : ''} class="${box}" />`, o.full);
+  const select = (id, label, placeholder, options) => wrap(id, label,
+    `<div class="relative"><select id="${id}" class="${box} appearance-none pr-9 text-slate-500 [&:has(option:checked:not([value='']))]:text-slate-900"><option value="">${placeholder}</option>${options.map((o) => `<option value="${o}">${o}</option>`).join('')}</select>
+    <svg class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-700" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></div>`);
+
+  $('fields').innerHTML =
+    text('rc', 'RC-Number', 'Enter......') +
+    select('type', 'Business type', 'Select business type', ['Pharmacy', 'Boutique', 'Others']) +
+    text('phone', 'Business phone', 'Enter business phone number', { type: 'tel', auto: 'tel' }) +
+    text('email', 'Business email', 'Enter business email', { type: 'email', auto: 'email' }) +
+    text('address', 'Address', 'Enter business address', { full: true, auto: 'street-address' }) +
+    text('city', 'City', 'Enter city', { auto: 'address-level2' }) +
+    text('state', 'State', 'Enter state', { auto: 'address-level1' }) +
+    text('country', 'Country', 'Nigeria', { value: 'Nigeria', auto: 'country-name' }) +
+    select('currency', 'Currency', 'Select Option', ['Nigerian Naira (₦)', 'Ghanaian Cedi (GH₵)', 'Kenyan Shilling (KSh)', 'South African Rand (R)', 'US Dollar ($)']);
+
+  const ids = ['rc', 'type', 'phone', 'email', 'address', 'city', 'state', 'country', 'currency', 'logo'];
+  const fail = (id, m) => { const n = $(id + '-error'); n.textContent = m; n.classList.remove('hidden'); $(id).setAttribute('aria-invalid', 'true'); };
+  const clear = () => ids.forEach((id) => { $(id).removeAttribute('aria-invalid'); const n = $(id + '-error'); n.textContent = ''; n.classList.add('hidden'); });
+
+  // Logo upload: PNG, JPG or SVG, up to 2 MB (the 2 MB limit is our choice until the backend confirms one)
+  const logo = $('logo');
+  const checkLogo = (file) => !file || (['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type) && file.size <= 2 * 1024 * 1024);
+  logo.addEventListener('change', () => {
+    $('logo-error').classList.add('hidden'); logo.removeAttribute('aria-invalid');
+    const file = logo.files[0];
+    if (!checkLogo(file)) { logo.value = ''; $('logo-name').textContent = 'Upload logo'; return fail('logo', 'Choose a PNG, JPG or SVG file under 2 MB.'); }
+    $('logo-name').textContent = file ? file.name : 'Upload logo';
+  });
+  ['dragover', 'drop'].forEach((evt) => $('drop').addEventListener(evt, (e) => {
+    e.preventDefault();
+    if (evt === 'drop' && e.dataTransfer.files.length) { logo.files = e.dataTransfer.files; logo.dispatchEvent(new Event('change')); }
+  }));
+
+  const next = 'inventory-setup.html';
+  $('skip').addEventListener('click', () => { window.location.href = next; });
+
+  $('setup').addEventListener('submit', (event) => {
+    event.preventDefault(); clear();
+    const v = (id) => $(id).value.trim();
+    let ok = true;
+    const need = { rc: 'Enter your RC-Number.', type: 'Select your business type.', phone: 'Enter your business phone number.', email: 'Enter your business email.',
+      address: 'Enter your business address.', city: 'Enter your city.', state: 'Enter your state.', country: 'Enter your country.', currency: 'Select a currency.' };
+    for (const id in need) if (!v(id)) { fail(id, need[id]); ok = false; }
+    if (v('phone') && !/^\d{10,15}$/.test(v('phone').replace(/[\s()+-]/g, ''))) { fail('phone', 'Enter a valid phone number.'); ok = false; }
+    if (v('email') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) { fail('email', 'Enter a valid email address.'); ok = false; }
+    if (!checkLogo(logo.files[0])) { fail('logo', 'Choose a PNG, JPG or SVG file under 2 MB.'); ok = false; }
+    if (!ok) { const first = document.querySelector('[aria-invalid="true"]'); if (first) first.focus(); return; }
+
+    // Mock until the backend API is connected (the logo file itself would be uploaded to the server)
+    try {
+      sessionStorage.setItem('business', JSON.stringify({ rc: v('rc'), type: v('type'), phone: v('phone'), email: v('email'), address: v('address'),
+        city: v('city'), state: v('state'), country: v('country'), currency: v('currency'), logoName: logo.files[0] ? logo.files[0].name : '' }));
+    } catch (e) {}
+    window.location.href = next;
+  });
+</script>
+</body>
+</html>

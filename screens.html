@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Settings | Stockwise Africa</title>
+
+
+
+  <!-- Google Fonts: Inter (body) and Space Grotesk (headings) -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+
+
+
+  <!-- Tailwind CSS v4 browser CDN -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+
+
+  <!-- Design tokens: they become classes like bg-navy, text-navy, bg-panel, font-grotesk.
+
+       The component classes below (.card, .field, .btn-primary ...) save repeating the same long class lists
+
+       on every form, button and card. -->
+
+  <style type="text/tailwindcss">
+
+    @theme {
+
+      --color-navy: #143967;
+
+      --color-accent-red: #e85363;
+
+      --color-panel: #eff4ff;
+
+      --font-sans: "Inter", sans-serif;
+
+      --font-grotesk: "Space Grotesk", sans-serif;
+
+    }
+
+
+
+    @layer components {
+
+      .card { @apply rounded-[10px] border border-navy/20; }
+
+      .field-label { @apply text-sm font-semibold; }
+
+      .field { @apply mt-1 block h-[39px] w-full rounded-[5px] border border-navy/50 bg-white px-3 text-sm text-navy outline-none focus:border-navy focus:ring-1 focus:ring-navy; }
+
+      .btn-primary { @apply inline-flex h-10 items-center justify-center gap-[5px] whitespace-nowrap rounded-[5px] bg-navy px-[18px] text-sm font-semibold text-white hover:bg-[#1b4a85] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy; }
+
+      .btn-outline { @apply inline-flex h-10 items-center justify-center gap-[5px] whitespace-nowrap rounded-[5px] border border-navy/50 bg-white px-4 text-sm font-semibold text-navy hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy; }
+
+      .switch { @apply relative h-6 w-11 shrink-0 cursor-pointer appearance-none rounded-full bg-navy/25 transition-colors checked:bg-navy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy; }
+
+    }
+
+  </style>
+
+
+
+  <!-- Custom CSS: the sidebar gradient, the active state of the Settings menu, the toggle switch knob,
+
+       and print rules (so "Download as PDF" prints only the legal document, without menus). -->
+
+  <style>
+
+    .sidebar-gradient {
+
+      background:
+
+        radial-gradient(50% 50% at 50% 50%, rgba(20, 57, 103, 0.068) 0%, rgba(20, 57, 103, 0) 100%),
+
+        linear-gradient(175.26deg, #143967 3.03%, #173d78 57.62%, #245ec2 97.33%);
+
+    }
+
+
+
+    /* The active Settings menu item gets a navy bar (left on desktop, bottom on mobile).
+
+       JavaScript only sets aria-current="page"; this rule does the styling. */
+
+    .settings-link[aria-current="page"] {
+
+      border-color: var(--color-navy, #143967);
+
+    }
+
+
+
+    /* The round knob inside a toggle switch (<input type="checkbox" class="switch">) */
+
+    .switch::after {
+
+      content: "";
+
+      position: absolute;
+
+      left: 2px;
+
+      top: 2px;
+
+      width: 20px;
+
+      height: 20px;
+
+      border-radius: 9999px;
+
+      background: #fff;
+
+      transition: transform 0.15s;
+
+    }
+
+    .switch:checked::after { transform: translateX(20px); }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .switch::after { transition: none; }
+
+    }
+
+
+
+    @media print {
+
+      .no-print { display: none !important; }
+
+      main { padding-left: 0 !important; }
+
+    }
+
+    [hidden] { display: none !important; }
+  #inventory-app { font-family: "Inter", sans-serif; }
+</style>
+
+</head>
+
+
+
+<body class="font-sans text-navy bg-white">
+
+
+  <!-- Everything inside this wrapper is the logged-in app. The logged-out legal view is further down. -->
+
+  <div id="app-shell">
+
+
+  <!-- Inventory and Settings share the single Settings sidebar below. -->
+  <!-- Combined Inventory view -->
+  <div id="inventory-app" hidden>
+ 
+    <!-- ===================== MAIN ===================== -->
+    <main class="w-full max-w-[440px] md:max-w-none mx-auto flex-1 pb-8 lg:ml-[350px]">
+ 
+      <!-- Mobile header -->
+      <header class="lg:hidden flex items-start justify-between px-5 pt-6 pb-4">
+        <div class="flex items-start gap-3">
+          <button id="inventory-menu-button" type="button" aria-label="Open menu" class="rounded-[5px] border border-[#143967]/30 p-2">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="#143967" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+          <h1 class="text-[20px] leading-tight font-bold text-black">Inventory</h1>
+          <p id="totalLabel" class="text-[12px] text-black/60"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <a href="notification.html" aria-label="Notifications"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#143967" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 3 1 4 1 5H5c0-1 1-2 1-5zM10 18a2 2 0 0 0 4 0" /></svg></a>
+          <svg class="w-9 h-9" viewBox="0 0 24 24" fill="#143967"><circle cx="12" cy="12" r="12" /><circle cx="12" cy="9.5" r="3.5" fill="#fff" /><path d="M5.5 19c1-3.5 4-4.5 6.5-4.5s5.5 1 6.5 4.5A11 11 0 0 1 12 23a11 11 0 0 1-6.5-4z" fill="#fff" /></svg>
+        </div>
+      </header>
+ 
+      <!-- Desktop top bar: global search, bell, user -->
+      <div class="hidden lg:flex items-center gap-6 px-8 pt-6">
+        <label class="flex-1 flex items-center gap-2 border border-[#143967]/20 rounded-[8px] px-3 py-2.5">
+          <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#143967" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+          <input id="globalSearch" type="search" placeholder="Search products, categories or SKU..." class="w-full bg-transparent text-[13px] placeholder-[#143967]/50 focus:outline-none" />
+        </label>
+        <a href="notification.html" aria-label="Notifications"><svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#143967" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0c0 3 1 4 1 5H5c0-1 1-2 1-5zM10 18a2 2 0 0 0 4 0" /></svg></a>
+        <div class="flex items-center gap-2">
+          <svg class="w-9 h-9" viewBox="0 0 24 24" fill="#143967"><circle cx="12" cy="12" r="12" /><circle cx="12" cy="9.5" r="3.5" fill="#fff" /><path d="M5.5 19c1-3.5 4-4.5 6.5-4.5s5.5 1 6.5 4.5A11 11 0 0 1 12 23a11 11 0 0 1-6.5-4z" fill="#fff" /></svg>
+          <div class="leading-tight"><p class="text-[13px] font-semibold text-black">John Doe</p><p class="text-[11px] text-black/60">Owner</p></div>
+        </div>
+      </div>
+ 
+      <!-- Desktop title row -->
+      <div class="hidden lg:flex items-center justify-between px-8 pt-5 pb-4">
+        <h1 class="text-[26px] font-bold text-black">Inventory</h1>
+        <a href="add.html" class="bg-[#143967] hover:bg-[#0f2c50] text-white text-[13px] font-bold rounded-[5px] px-4 py-2.5">+ Add Product</a>
+      </div>
+ 
+      <!-- Search + filters -->
+      <section class="px-5 md:px-8 flex flex-col gap-3">
+        <div class="flex items-center gap-2 md:flex-wrap">
+          <label class="flex-1 md:flex-none md:w-52 flex items-center gap-2 bg-[#143967]/[6%] md:bg-white md:border md:border-[#143967]/20 rounded-[8px] px-3 py-2.5">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#143967" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+            <input id="search" type="search" placeholder="Search products, categories..." class="w-full bg-transparent text-[13px] placeholder-[#143967]/50 focus:outline-none" />
+          </label>
+ 
+          <!-- Mobile: this button shows/hides the category filter -->
+          <button id="filterBtn" type="button" aria-label="Show filters" class="md:hidden w-10 h-10 shrink-0 rounded-[8px] bg-[#143967]/[6%] flex items-center justify-center">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#143967"><path d="M3 4h18l-7 8v7l-4 2v-9z" /></svg>
+          </button>
+ 
+          <select id="category" class="hidden md:block border border-[#143967]/20 rounded-[8px] px-3 py-2.5 text-[13px] bg-white focus:outline-none">
+            <option value="all">All categories</option>
+          </select>
+          <select id="statusSelect" class="hidden md:block border border-[#143967]/20 rounded-[8px] px-3 py-2.5 text-[13px] bg-white focus:outline-none">
+            <option value="all">All stock status</option>
+            <option value="in">In stock</option>
+            <option value="low">Low stock</option>
+            <option value="out">Out of stock</option>
+            <option value="expiring">Expiring soon</option>
+          </select>
+          <div class="hidden md:flex items-center gap-2 border border-[#143967]/20 rounded-[8px] px-3 py-2 text-[13px] bg-white">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#143967" stroke-width="1.5"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
+            <input id="dateFrom" type="date" aria-label="Added from" class="bg-transparent focus:outline-none" />
+            <span>-</span>
+            <input id="dateTo" type="date" aria-label="Added to" class="bg-transparent focus:outline-none" />
+          </div>
+        </div>
+ 
+        <!-- Mobile only: category dropdown opened by the filter button -->
+        <select id="categoryMobile" class="hidden md:hidden border border-[#143967]/20 rounded-[8px] px-3 py-2.5 text-[13px] bg-white focus:outline-none">
+          <option value="all">All categories</option>
+        </select>
+ 
+        <!-- Mobile only: status chips -->
+        <div id="chips" class="md:hidden flex gap-2 overflow-x-auto pb-1 -mx-5 px-5"></div>
+      </section>
+ 
+      <!-- Mobile list -->
+      <ul id="cards" class="md:hidden px-5 mt-3 divide-y divide-[#143967]/10"></ul>
+ 
+      <!-- Desktop table -->
+      <div class="hidden md:block px-8 mt-2">
+        <div class="border border-[#143967]/10 rounded-[8px] overflow-x-auto">
+          <table class="w-full text-[12px] text-center">
+            <thead class="bg-[#143967]/[6%] text-[#143967]">
+              <tr>
+                <th class="p-3 w-10"><input id="selectAll" type="checkbox" aria-label="Select all products" /></th>
+                <th class="p-3 font-semibold text-left">Product Name</th>
+          <th class="p-3 font-semibold">Category</th>
+          <th class="p-3 font-semibold">Selling Price</th>
+          <th class="p-3 font-semibold">Current stock</th>
+          <th class="p-3 font-semibold">Reorder level</th>
+          <th class="p-3 font-semibold">Expiry date</th>
+          <th class="p-3 font-semibold">Status</th>
+          <th class="p-3 font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rows" class="divide-y divide-[#143967]/10"></tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <!-- Empty state -->
+      <div id="empty" class="hidden text-center px-5 py-16">
+        <p class="font-bold text-[15px]">No products found</p>
+        <p class="text-[12px] text-black/60 mt-1">Try a different search or clear the filters.</p>
+        <button id="clearBtn" type="button" class="mt-4 bg-[#143967] text-white text-[13px] font-bold rounded-[5px] px-4 py-2.5">Clear filters</button>
+      </div>
+ 
+      <!-- Pagination -->
+      <footer id="pager" class="px-5 md:px-8 mt-4 flex items-center justify-between text-[12px]">
+        <p id="showing" class="text-black/60"></p>
+        <div id="pages" class="flex items-center gap-1"></div>
+      </footer>
+    </main>
+  </div>
+
+
+
+
+
+  <div id="sidebar-overlay" class="no-print fixed inset-0 z-30 hidden bg-black/40 lg:hidden"></div>
+
+
+
+  <!-- ================= PRIMARY SIDEBAR (Settings is active) ================= -->
+
+  <aside id="sidebar"
+
+    class="no-print sidebar-gradient fixed inset-y-0 left-0 z-40 flex w-[300px] -translate-x-full flex-col px-[30px] py-[50px] text-white transition-transform lg:w-[350px] lg:translate-x-0">
+
+
+
+    <div class="flex items-center gap-[15px]">
+
+      <div class="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-white">
+
+        <img src="logo.png" alt="Stockwise Africa logo" class="h-[26px] w-[35px] object-contain" />
+
+      </div>
+
+      <span class="font-grotesk text-2xl font-medium">Stockwise Africa</span>
+
+    </div>
+
+
+
+    <nav aria-label="Main" class="mt-[90px] flex flex-col gap-2.5">
+
+      <a href="#" data-page="Home" class="nav-link flex items-center gap-[15px] rounded-[5px] p-[15px] text-xl font-medium hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>
+
+        Home
+
+      </a>
+
+      <a href="#inventory" class="nav-link flex items-center gap-[15px] rounded-[5px] p-[15px] text-xl font-medium hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h2M13 8h3M8 12h2M13 12h3M8 16h2M13 16h3"/></svg>
+
+        Inventory
+
+      </a>
+
+      <a href="#sales" class="nav-link flex items-center gap-[15px] rounded-[5px] p-[15px] text-xl font-medium hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2 12h11l2-8H6"/><circle cx="9" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg>
+
+        Sales
+
+      </a>
+
+      <a href="#alerts" class="nav-link flex items-center gap-[15px] rounded-[5px] p-[15px] text-xl font-medium hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 15.5V10.5a5.5 5.5 0 0 1 11 0v5l1.3 2.7H5.2z"/><path d="M10.2 19.8a1.8 1.8 0 0 0 3.6 0"/></svg>
+
+        Alerts
+
+      </a>
+
+      <a href="#reports" class="nav-link flex items-center gap-[15px] rounded-[5px] p-[15px] text-xl font-medium hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-6"/></svg>
+
+        Reports
+
+      </a>
+
+    </nav>
+
+
+
+    <!-- mt-auto pushes Settings and Logout to the bottom -->
+
+    <div class="mt-auto flex flex-col gap-2.5">
+
+      <a href="#business" aria-current="page" class="nav-link flex items-center gap-[15px] rounded-[5px] bg-white p-[15px] text-xl font-medium text-navy focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M10.16 4.63 L10.44 2.12 L13.56 2.12 L13.84 4.63 L15.91 5.49 L17.88 3.91 L20.09 6.12 L18.51 8.09 L19.37 10.16 L21.88 10.44 L21.88 13.56 L19.37 13.84 L18.51 15.91 L20.09 17.88 L17.88 20.09 L15.91 18.51 L13.84 19.37 L13.56 21.88 L10.44 21.88 L10.16 19.37 L8.09 18.51 L6.12 20.09 L3.91 17.88 L5.49 15.91 L4.63 13.84 L2.12 13.56 L2.12 10.44 L4.63 10.16 L5.49 8.09 L3.91 6.12 L6.12 3.91 L8.09 5.49Z"/></svg>
+
+        Settings
+
+      </a>
+
+      <button id="logout-button" type="button" class="flex items-center gap-[15px] rounded-[5px] p-[15px] text-xl font-medium text-accent-red hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white">
+
+        <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M10 12h11M17 8l4 4-4 4"/></svg>
+
+        Logout
+
+      </button>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- ================= SALES OVERVIEW (uses the shared Stockwise sidebar) ================= -->
+  <main id="sales-app" hidden class="min-h-screen w-full lg:pl-[350px]">
+    <div class="flex min-h-screen min-w-0 flex-1 flex-col px-4 pb-4 pt-5 lg:px-6">
+      <header class="flex items-center justify-between gap-4">
+        <button id="sales-menu-button" type="button" aria-label="Open menu" class="rounded-[5px] border border-navy/30 p-2 lg:hidden"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <div class="flex-1"><h1 class="font-grotesk text-3xl font-bold text-[#17396b]">Sales</h1><p class="text-[11px] text-slate-600">View and manage your sales records. Track performance, filter by date and export reports.</p></div>
+        <button type="button" id="record-sale-open" class="flex min-h-9 items-center gap-2 rounded-md bg-[#17396b] px-4 text-[11px] font-semibold text-white hover:opacity-90"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l3 12h11l2-8H6"/></svg>Record Sale</button>
+      </header>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <div class="relative"><button type="button" id="range-btn" aria-haspopup="dialog" aria-expanded="false" class="flex min-h-9 items-center gap-2 rounded-md border border-[#17396b] bg-white px-3 text-[11px] font-semibold text-[#17396b]"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span id="range-label"></span></button>
+          <div id="range-panel" role="dialog" aria-label="Choose a date range" class="absolute left-0 z-20 mt-2 hidden w-72 rounded-lg border border-slate-200 bg-white p-4 text-xs shadow-xl"><p class="mb-2 font-semibold">Quick ranges</p><div id="presets" class="mb-3 grid grid-cols-2 gap-1.5"></div><p class="mb-2 font-semibold">Custom range</p><div class="grid grid-cols-2 gap-2"><label class="flex flex-col gap-1">From<input id="from" type="date" class="min-h-9 rounded-md border border-[#17396b] px-2 text-xs"/></label><label class="flex flex-col gap-1">To<input id="to" type="date" class="min-h-9 rounded-md border border-[#17396b] px-2 text-xs"/></label></div><p id="range-error" class="mt-2 hidden text-red-600" role="alert"></p><p id="tz-note" class="mt-2 text-[10px] text-slate-500"></p><div class="mt-3 flex justify-end gap-2"><button type="button" id="range-cancel" class="min-h-8 rounded-md border border-[#17396b] px-4 font-semibold text-[#17396b]">Cancel</button><button type="button" id="range-apply" class="min-h-8 rounded-md bg-[#17396b] px-4 font-semibold text-white">Apply</button></div></div>
+        </div>
+        <label class="relative"><span class="sr-only">Search sales</span><input id="q" type="search" placeholder="Search..." class="min-h-9 w-44 rounded-md border border-slate-300 bg-white px-3 text-[11px] focus:border-[#17396b] focus:outline-none focus:ring-2 focus:ring-[#17396b]/20"/></label>
+        <label><span class="sr-only">Payment method</span><select id="pay" class="min-h-9 w-44 rounded-md border border-slate-300 bg-white px-3 text-[11px]"><option value="">All Payment Method</option><option>Cash</option><option>Card</option><option>Bank Transfer</option><option>Other</option></select></label>
+        <label><span class="sr-only">Staff member</span><select id="staff" class="min-h-9 w-44 rounded-md border border-slate-300 bg-white px-3 text-[11px]"><option value="">All Staff Member</option></select></label>
+      </div>
+      <div class="mt-3 overflow-x-auto rounded-md border border-slate-200 bg-white"><table class="w-full min-w-[760px] text-left text-[11px]"><thead class="bg-slate-100 text-slate-700"><tr><th class="px-4 py-3 font-medium">Date &amp; Time</th><th class="px-4 py-3 font-medium">Product</th><th class="px-4 py-3 font-medium">Quantity</th><th class="px-4 py-3 font-medium">Unit Price</th><th class="px-4 py-3 font-medium">Total Amount</th><th class="px-4 py-3 font-medium">Payment Method</th><th class="px-4 py-3 font-medium">Recorded By</th><th class="px-4 py-3 text-right font-medium">Actions</th></tr></thead><tbody id="sales-rows" class="divide-y divide-slate-100"></tbody></table></div>
+      <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px]"><p id="sales-count" role="status"></p><nav id="sales-pager" aria-label="Pagination" class="flex items-center gap-1"></nav></div>
+    </div>
+  </main>
+
+  <dialog id="sale-entry-dialog" aria-labelledby="sale-entry-title" class="m-auto w-[min(94vw,620px)] rounded-xl p-0 backdrop:bg-black/40">
+    <form id="sale" novalidate class="max-h-[90vh] overflow-y-auto p-5">
+      <div class="flex items-start justify-between gap-3"><div><h2 id="sale-entry-title" class="font-grotesk text-xl font-bold text-[#17396b]">Record Sale</h2><p class="text-[11px] text-slate-600">Stock will update when you confirm the sale.</p></div><button type="button" id="cancel" aria-label="Close" class="rounded px-2 text-xl">×</button></div>
+      <label for="sale-product" class="mt-4 block text-[11px] font-medium">Product*</label><select id="sale-product" class="mt-1 min-h-10 w-full rounded-md border border-[#17396b] bg-white px-3 text-xs"></select>
+      <div class="mt-3 grid grid-cols-2 gap-3"><div><p class="text-[10px]">Current Stock</p><p id="p-stock" class="text-lg font-bold text-[#17396b]"></p></div><div><p class="text-[10px]">Selling Price</p><p id="p-sell" class="text-lg font-bold text-[#17396b]"></p></div></div>
+      <div class="mt-3 grid gap-3 sm:grid-cols-2"><div><label for="qty" class="text-[11px] font-medium">Quantity sold*</label><input id="qty" type="number" min="1" step="1" value="1" class="mt-1 min-h-10 w-full rounded-md border border-[#17396b] px-3 text-xs"/><p id="qty-error" class="hidden text-[11px] text-red-600" role="alert"></p></div><div><label for="price" class="text-[11px] font-medium">Unit price (Optional)</label><input id="price" type="number" min="0" step="0.01" class="mt-1 min-h-10 w-full rounded-md border border-[#17396b] px-3 text-xs"/><p id="price-error" class="hidden text-[11px] text-red-600" role="alert"></p></div></div>
+      <label for="payment" class="mt-3 block text-[11px] font-medium">Payment method*</label><select id="payment" class="mt-1 min-h-10 w-full rounded-md border border-[#17396b] bg-white px-3 text-xs"><option value="">Select payment method</option><option>Cash</option><option>Bank Transfer</option><option>POS / Card</option><option>Other</option></select><p id="payment-error" class="hidden text-[11px] text-red-600" role="alert"></p>
+      <label for="note" class="mt-3 block text-[11px] font-medium">Note (optional)</label><textarea id="note" rows="3" maxlength="250" class="mt-1 w-full rounded-md border border-slate-300 p-3 text-xs" placeholder="Customer purchase, walk-in, etc."></textarea>
+      <p id="done" class="mt-3 hidden rounded bg-emerald-50 px-3 py-2 text-xs text-emerald-800" role="status"></p>
+      <div class="mt-4 flex justify-end gap-2"><button type="button" id="sale-cancel" class="min-h-10 rounded-md border border-[#17396b] px-5 text-xs font-semibold text-[#17396b]">Cancel</button><button type="submit" class="min-h-10 rounded-md bg-[#17396b] px-6 text-xs font-semibold text-white">Confirm Sale</button></div>
+    </form>
+  </dialog>
+  <dialog id="sale-detail-dialog" aria-labelledby="sale-detail-title" class="m-auto w-[min(92vw,380px)] rounded-xl p-0 backdrop:bg-black/40"><div class="p-5 text-xs"><h2 id="sale-detail-title" class="font-grotesk text-lg font-bold text-[#17396b]">Sale details</h2><dl id="sale-detail-body" class="mt-3 divide-y divide-slate-100"></dl><div class="mt-4 flex justify-end"><button type="button" id="sale-detail-close" class="min-h-9 rounded-md bg-[#17396b] px-6 font-semibold text-white">Close</button></div></div></dialog>
+
+  <!-- ================= REPORTS (uses the shared Stockwise sidebar) ================= -->
+  <main id="reports-app" hidden class="min-h-screen w-full lg:pl-[350px]">
+    <div class="min-h-screen px-4 pb-8 pt-6 lg:px-[30px] lg:pt-[35px]">
+      <header class="flex flex-wrap items-start justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <button id="reports-menu-button" type="button" aria-label="Open menu" class="rounded-[5px] border border-navy/30 p-2 lg:hidden"><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div><h1 class="font-grotesk text-3xl font-bold text-[#17396b]">Reports</h1><p class="text-[11px] text-slate-600">Access detailed reports on your inventory, sales and business performance.</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative"><button type="button" id="reports-range-btn" aria-haspopup="dialog" aria-expanded="false" class="flex min-h-9 items-center gap-2 rounded-md border border-[#17396b] bg-white px-3 text-[11px] font-semibold text-[#17396b]"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span id="reports-range-label"></span></button>
+            <div id="reports-range-panel" role="dialog" aria-label="Choose a date range" class="absolute right-0 z-20 mt-2 hidden w-72 rounded-lg border border-slate-200 bg-white p-4 text-xs shadow-xl"><p class="mb-2 font-semibold">Quick ranges</p><div id="reports-presets" class="mb-3 grid grid-cols-2 gap-1.5"></div><p class="mb-2 font-semibold">Custom range</p><div class="grid grid-cols-2 gap-2"><label class="flex flex-col gap-1">From<input id="reports-from" type="date" class="min-h-9 rounded-md border border-[#17396b] px-2 text-xs"/></label><label class="flex flex-col gap-1">To<input id="reports-to" type="date" class="min-h-9 rounded-md border border-[#17396b] px-2 text-xs"/></label></div><p id="reports-range-error" class="mt-2 hidden text-red-600" role="alert"></p><p id="reports-tz-note" class="mt-2 text-[10px] text-slate-500"></p><div class="mt-3 flex justify-end gap-2"><button type="button" id="reports-range-cancel" class="min-h-8 rounded-md border border-[#17396b] px-4 font-semibold text-[#17396b]">Cancel</button><button type="button" id="reports-range-apply" class="min-h-8 rounded-md bg-[#17396b] px-4 font-semibold text-white">Apply</button></div></div>
+          </div>
+          <button type="button" id="reports-export" class="flex min-h-9 items-center gap-2 rounded-md bg-[#17396b] px-4 text-[11px] font-semibold text-white hover:opacity-90">Export Report</button>
+        </div>
+      </header>
+      <ul id="reports-stats" class="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-live="polite"></ul>
+      <div id="reports-tabs" role="tablist" aria-label="Report type" class="mt-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-md bg-slate-200/70 p-1"></div>
+      <div id="reports-overview-panel" role="tabpanel" class="mt-3">
+        <div class="grid gap-3 lg:grid-cols-[1.35fr_1fr]">
+          <section class="rounded-lg border border-slate-200 bg-white p-4" aria-labelledby="reports-sales-heading"><div class="flex items-center justify-between"><h2 id="reports-sales-heading" class="font-grotesk text-sm font-bold text-[#17396b]">Sales Overview</h2><label class="relative"><span class="sr-only">Chart range</span><select id="reports-chart-range" class="min-h-8 appearance-none rounded-md border border-slate-300 bg-white pl-3 pr-7 text-[11px]"><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="custom">Custom range</option></select></label></div><div id="reports-chart" class="mt-2"></div></section>
+          <section class="rounded-lg border border-slate-200 bg-white p-4" aria-labelledby="reports-payment-heading"><h2 id="reports-payment-heading" class="font-grotesk text-sm font-bold text-[#17396b]">Sales by Payment Method</h2><div id="reports-donut" class="mt-3 flex flex-wrap items-center justify-center gap-6"></div></section>
+        </div>
+        <div class="mt-3 grid gap-3 lg:grid-cols-2">
+          <section class="rounded-lg border border-slate-200 bg-white p-4"><div class="flex items-center justify-between"><h2 class="text-xs font-semibold text-[#17396b]">Top Selling Products</h2><a href="#sales" class="text-[11px] hover:underline">View all →</a></div><div class="mt-2 overflow-x-auto"><table class="w-full min-w-[360px] text-left text-[11px]"><thead class="bg-slate-100 text-slate-700"><tr><th class="px-3 py-2 font-medium">Product</th><th class="px-3 py-2 font-medium">Quantity Sold</th><th class="px-3 py-2 font-medium">Total Sales</th><th class="px-3 py-2 font-medium">% of Sales</th></tr></thead><tbody id="reports-top" class="divide-y divide-slate-100"></tbody></table></div></section>
+          <section class="rounded-lg border border-slate-200 bg-white p-4"><div class="flex items-center justify-between"><h2 class="text-xs font-semibold text-[#17396b]">Sales by Category</h2><a href="#inventory" class="text-[11px] hover:underline">View inventory →</a></div><div class="mt-2 overflow-x-auto"><table class="w-full min-w-[320px] text-left text-[11px]"><thead class="bg-slate-100 text-slate-700"><tr><th class="px-3 py-2 font-medium">Category</th><th class="px-3 py-2 font-medium">Quantity Sold</th><th class="px-3 py-2 font-medium">Total Sales</th></tr></thead><tbody id="reports-cats" class="divide-y divide-slate-100"></tbody></table></div></section>
+        </div>
+      </div>
+      <section id="reports-other-panel" role="tabpanel" class="mt-3 hidden rounded-lg border border-slate-200 bg-white p-6 text-xs"></section>
+      <p id="reports-live" class="sr-only" role="status"></p>
+    </div>
+  </main>
+
+  <!-- ================= ALERTS (uses the shared Stockwise sidebar) ================= -->
+  <main id="alerts-app" hidden class="min-h-screen w-full flex-col lg:pl-[350px]">
+    <header class="flex items-center justify-between gap-4 px-5 pt-6 lg:px-[30px] lg:pt-[35px]">
+      <div class="flex items-center gap-3">
+        <button id="alerts-menu-button" type="button" aria-label="Open menu" class="rounded-[5px] border border-navy/30 p-2 lg:hidden">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div><h1 class="font-grotesk text-[22px] font-bold">Alerts</h1><p class="text-xs text-navy/70">Stay on top of important updates and take action when needed.</p></div>
+      </div>
+      <button id="alerts-mark-all" type="button" class="btn-outline h-9 px-3 text-xs">Mark all as read</button>
+    </header>
+    <section id="alerts-summary" class="grid grid-cols-2 gap-3 px-5 pt-5 lg:px-[30px] lg:grid-cols-4">
+      <article class="card p-3"><p class="text-xs font-semibold">Low Stock</p><p data-alert-count="Low Stock" class="mt-1 text-2xl font-bold">0</p><p class="text-[11px]">items need restocking</p></article>
+      <article class="card p-3"><p class="text-xs font-semibold">Out of Stock</p><p data-alert-count="Out of Stock" class="mt-1 text-2xl font-bold">0</p><p class="text-[11px]">items are out of stock</p></article>
+      <article class="card p-3"><p class="text-xs font-semibold">Expiring Soon</p><p data-alert-count="Expiring Soon" class="mt-1 text-2xl font-bold">0</p><p class="text-[11px]">items expire within 7 days</p></article>
+      <article class="card p-3"><p class="text-xs font-semibold">Sync Issues</p><p data-alert-count="Sync Issue" class="mt-1 text-2xl font-bold">0</p><p class="text-[11px]">items need attention</p></article>
+    </section>
+    <nav id="alert-filter-row" aria-label="Filter alerts" class="flex gap-2 overflow-x-auto px-5 pt-5 pb-1 lg:px-[30px]">
+      <button type="button" class="alert-filter shrink-0 rounded-[5px] bg-navy px-4 py-2 text-xs font-semibold text-white" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" class="alert-filter shrink-0 rounded-[5px] bg-navy/10 px-4 py-2 text-xs font-semibold" data-filter="Low Stock" aria-pressed="false">Low Stock</button>
+      <button type="button" class="alert-filter shrink-0 rounded-[5px] bg-navy/10 px-4 py-2 text-xs font-semibold" data-filter="Out of Stock" aria-pressed="false">Out of Stock</button>
+      <button type="button" class="alert-filter shrink-0 rounded-[5px] bg-navy/10 px-4 py-2 text-xs font-semibold" data-filter="Expiring Soon" aria-pressed="false">Expiring Soon</button>
+      <button type="button" class="alert-filter shrink-0 rounded-[5px] bg-navy/10 px-4 py-2 text-xs font-semibold" data-filter="Sync Issue" aria-pressed="false">Sync Issues</button>
+    </nav>
+    <section id="alert-list" aria-live="polite" class="flex flex-col gap-2 px-5 pt-4 pb-10 lg:px-[30px]"></section>
+  </main>
+
+  <!-- ================= MAIN AREA ================= -->
+
+  <main id="settings-main" class="flex min-h-screen flex-col lg:pl-[350px]">
+
+
+
+    <!-- Top part: search/profile row and page heading (hidden when printing) -->
+
+    <div class="no-print px-4 pt-6 lg:pl-[30px] lg:pr-[30px] lg:pt-[35px]">
+
+
+
+      <header class="flex flex-wrap items-center gap-4 lg:flex-nowrap lg:items-start">
+
+        <button id="menu-button" type="button" aria-label="Open menu" class="rounded-[5px] border border-navy/50 p-2 hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:hidden">
+
+          <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+
+        </button>
+
+
+
+        <label class="order-last flex h-[42px] w-full items-center gap-2.5 rounded-[5px] border border-navy/50 px-[15px] focus-within:border-navy focus-within:ring-1 focus-within:ring-navy lg:order-none lg:max-w-[910px] lg:flex-1">
+
+          <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+
+          <span class="sr-only">Search</span>
+
+          <input id="top-search" type="search" placeholder="Search products, categories or SKU..." class="w-full bg-transparent text-sm outline-none placeholder:text-navy" />
+
+        </label>
+
+
+
+        <div class="relative ml-auto flex items-center gap-[30px]">
+
+          <button id="notification-button" type="button" aria-label="Notifications" aria-expanded="false" class="rounded-full p-1 hover:bg-navy/10 focus-visible:outline-2 focus-visible:outline-navy">
+
+            <svg class="size-[35px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 15.5V10.5a5.5 5.5 0 0 1 11 0v5l1.3 2.7H5.2z"/><path d="M10.2 19.8a1.8 1.8 0 0 0 3.6 0"/></svg>
+
+          </button>
+
+          <div class="flex items-center gap-2.5">
+
+            <svg class="size-10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 14a8 8 0 0 1-6-2.7C6.2 15.6 9 15 12 15s5.8.6 6 2.3A8 8 0 0 1 12 20z"/></svg>
+
+            <div class="leading-tight">
+
+              <p id="topbar-name" class="text-lg font-semibold">John Doe</p>
+
+              <p class="text-sm font-semibold">Owner</p>
+
+            </div>
+
+          </div>
+
+          <div id="notification-panel" class="absolute right-0 top-14 z-20 hidden w-72 max-w-[calc(100vw-2rem)] rounded-[5px] border border-navy/20 bg-white p-4 text-sm shadow-lg">
+
+            <p class="font-semibold">Notifications</p>
+
+            <p class="mt-2">You have no new notifications.</p>
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+
+      <!-- Page heading (changes with the selected view) + Invite Team Member button (hidden on the legal views) -->
+
+      <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between lg:mt-5">
+
+        <div>
+
+          <h1 id="page-title" class="font-grotesk text-[32px] font-bold leading-[42px] sm:text-[36px] sm:leading-[46px]">Settings</h1>
+
+          <p id="page-subtitle" class="text-sm font-medium">Manage your business settings, preferences and system configuration.</p>
+
+        </div>
+
+        <button id="header-invite" type="button" data-open-invite class="flex h-10 w-full shrink-0 items-center justify-center gap-[5px] whitespace-nowrap rounded-[5px] bg-navy px-[15px] text-sm font-semibold text-white hover:bg-[#1b4a85] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy sm:w-[193px]">
+
+          <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="7.5" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 10.5-5"/><path d="M18 14.5v6M15 17.5h6"/></svg>
+
+          Invite Team Member
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Bottom part: secondary Settings menu on the left, content on the right.
+
+         Stacks vertically on small screens; the menu becomes a scrollable row. -->
+
+    <div class="mt-5 flex flex-1 flex-col px-4 lg:mt-[25px] lg:flex-row lg:pl-5 lg:pr-[30px]">
+
+
+
+      <!-- ===== SECONDARY SETTINGS MENU =====
+
+           Every item is a link to a view (#business, #profile, #teams, #notifications, #terms, #privacy).
+
+           JavaScript gives the active one aria-current="page" and the CSS draws the navy bar. -->
+
+      <aside class="no-print shrink-0 rounded-[10px] bg-panel px-2.5 py-3 lg:w-[320px] lg:rounded-b-none lg:py-5">
+
+        <nav aria-label="Settings" class="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-col lg:gap-[25px] lg:overflow-visible">
+
+
+
+          <!-- Group labels only show on desktop; on mobile the menu is a single scrollable row -->
+
+          <p class="hidden px-[15px] text-xl font-semibold lg:block">Account</p>
+
+
+
+          <a href="#business" class="settings-link flex min-h-9 items-center gap-[15px] whitespace-nowrap border-b-4 border-b-transparent px-[15px] py-0.5 text-xl font-medium hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:border-b-0 lg:border-l-4 lg:border-l-transparent">
+
+            <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 21V6.5l8-3.5V21M11.5 8.5h8v12.5M2.5 21h19"/><path d="M6.5 8.5h2M6.5 12h2M6.5 15.5h2M14.5 12h2M14.5 15.5h2" stroke-linecap="round"/></svg>
+
+            Business Info
+
+          </a>
+
+
+
+          <a href="#profile" class="settings-link flex min-h-9 items-center gap-[15px] whitespace-nowrap border-b-4 border-b-transparent px-[15px] py-0.5 text-xl font-medium hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:border-b-0 lg:border-l-4 lg:border-l-transparent">
+
+            <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="9.5" r="3"/><path d="M6.5 18.5c1.2-2.3 3-3.5 5.5-3.5s4.3 1.2 5.5 3.5"/></svg>
+
+            Profile
+
+          </a>
+
+
+
+          <a href="#teams" class="settings-link flex min-h-9 items-center justify-between gap-[15px] whitespace-nowrap border-b-4 border-b-transparent px-[15px] py-0.5 text-xl font-medium hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:border-b-0 lg:border-l-4 lg:border-l-transparent">
+
+            <span class="flex items-center gap-[15px]">
+
+              <svg class="size-8 shrink-0" viewBox="0 0 90 81" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="45" cy="11" r="8"/><circle cx="14" cy="20" r="7"/><circle cx="76" cy="20" r="7"/><path d="M32 38A4 4 0 0 1 36 34H54A4 4 0 0 1 58 38V57C58 68 52 73 45 77C38 73 32 68 32 57Z"/><path d="M22 38H18A12 12 0 0 0 6 50V61A8 8 0 0 0 14 69H22"/><path d="M68 38H72A12 12 0 0 1 84 50V61A8 8 0 0 1 76 69H68"/></svg>
+
+              Teams &amp; Roles
+
+            </span>
+
+            <span class="flex size-[30px] shrink-0 items-center justify-center rounded-full bg-navy text-lg font-medium text-white">3</span>
+
+          </a>
+
+
+
+          <a href="#notifications" class="settings-link flex min-h-9 items-center gap-[15px] whitespace-nowrap border-b-4 border-b-transparent px-[15px] py-0.5 text-xl font-medium hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:border-b-0 lg:border-l-4 lg:border-l-transparent">
+
+            <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 4H6.5A2.500 2.500 0 0 0 4 6.500v11A2.500 2.500 0 0 0 6.500 20h11a2.500 2.500 0 0 0 2.500-2.500V10.500"/><circle cx="18" cy="6" r="2.500"/></svg>
+
+            Notifications
+
+          </a>
+
+
+
+          <p class="hidden px-[15px] text-xl font-semibold lg:mt-2.5 lg:block">Legal</p>
+
+
+
+          <a href="#terms" class="settings-link flex min-h-9 items-center gap-[15px] whitespace-nowrap border-b-4 border-b-transparent px-[15px] py-0.5 text-xl font-medium hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:border-b-0 lg:border-l-4 lg:border-l-transparent">
+
+            <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+
+            Terms &amp; Conditions
+
+          </a>
+
+
+
+          <a href="#privacy" class="settings-link flex min-h-9 items-center gap-[15px] whitespace-nowrap border-b-4 border-b-transparent px-[15px] py-0.5 text-xl font-medium hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy lg:border-b-0 lg:border-l-4 lg:border-l-transparent">
+
+            <svg class="size-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.500-3 8-7 10-4-2-7-5.500-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+
+            Privacy Policy
+
+          </a>
+
+        </nav>
+
+      </aside>
+
+
+
+      <!-- ===== CONTENT: only one .view is visible at a time (JavaScript switches them) ===== -->
+
+      <section id="content" class="min-w-0 flex-1 py-6 lg:py-5 lg:pl-[30px] print:py-0">
+
+
+
+        <!-- ---------- BUSINESS INFO ---------- -->
+
+        <div id="view-business" class="view card p-5 sm:p-[30px]">
+
+          <h2 class="font-grotesk text-2xl font-bold">Business Settings</h2>
+
+          <p class="text-sm font-medium">Update your business information and setup.</p>
+
+
+
+          <div class="mt-6 grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
+
+            <div>
+
+              <label for="biz-name" class="field-label">Business Name</label>
+
+              <input id="biz-name" class="field" value="Storewise" />
+
+            </div>
+
+            <div>
+
+              <label for="biz-rc" class="field-label">RC-Number</label>
+
+              <input id="biz-rc" class="field" placeholder="xxx-xxx-xxx-xxx" />
+
+            </div>
+
+            <div>
+
+              <label for="biz-type" class="field-label">Business Type</label>
+
+              <select id="biz-type" class="field">
+
+                <option>Pharmacy &amp; Retail</option><option>Supermarket</option><option>Wholesale</option><option>Other</option>
+
+              </select>
+
+            </div>
+
+            <div>
+
+              <label for="biz-phone" class="field-label">Phone Number</label>
+
+              <input id="biz-phone" class="field" value="+234 812 345 6789" />
+
+            </div>
+
+            <div>
+
+              <label for="biz-currency" class="field-label">Default Currency</label>
+
+              <select id="biz-currency" class="field">
+
+                <option>NGN (₦)</option><option>GHS (₵)</option><option>KES (KSh)</option><option>USD ($)</option>
+
+              </select>
+
+            </div>
+
+            <div>
+
+              <label for="biz-email" class="field-label">Email Address</label>
+
+              <input id="biz-email" type="email" class="field" value="business@storewise.com" />
+
+            </div>
+
+            <div>
+
+              <label for="biz-address" class="field-label">Store Address</label>
+
+              <textarea id="biz-address" class="field h-28 resize-none py-2">123 Market Street, Abuja, Nigeria</textarea>
+
+            </div>
+
+            <div>
+
+              <span class="field-label">Business Logo</span>
+
+              <div class="mt-1 flex items-center gap-4">
+
+                <div id="logo-box" class="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[5px] bg-navy/10 text-navy/60">
+
+                  <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 9"/></svg>
+
+                </div>
+
+                <div>
+
+                  <button type="button" id="logo-button" class="btn-outline">Upload Logo</button>
+
+                  <p class="mt-1 text-xs">PNG, JPG (Max 2MB)</p>
+
+                  <input type="file" id="logo-input" accept="image/png,image/jpeg" class="hidden" />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <button type="button" class="btn-primary mt-6 w-full sm:w-72" data-toast="Business settings saved">Save Changes</button>
+
+        </div>
+
+
+
+        <!-- ---------- PROFILE ---------- -->
+
+        <div id="view-profile" class="view" hidden>
+
+          <h2 class="font-grotesk text-2xl font-bold">My Profile</h2>
+
+          <p class="mb-4 text-sm font-medium">View and manage your account details, security and preferences.</p>
+
+
+
+          <div class="card">
+
+            <div class="flex flex-col gap-4 border-b border-navy/20 p-5 sm:flex-row sm:items-center sm:justify-between">
+
+              <div class="flex items-center gap-4">
+
+                <div class="relative size-16 shrink-0">
+
+                  <div id="avatar-box" class="grid size-16 place-items-center overflow-hidden rounded-full bg-navy text-white">
+
+                    <svg class="size-11 translate-y-0.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.5"/><path d="M3.5 22c0-4.700 3.800-8 8.500-8s8.500 3.300 8.500 8z"/></svg>
+
+                  </div>
+
+                  <button type="button" id="avatar-button" aria-label="Change profile picture" class="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full border border-navy bg-white text-navy hover:bg-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">
+
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 7.500 6H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-3.500L15 4z"/><circle cx="12" cy="12.500" r="3.200"/></svg>
+
+                  </button>
+
+                  <input type="file" id="avatar-input" accept="image/png,image/jpeg" class="hidden" />
+
+                </div>
+
+                <div>
+
+                  <p id="header-name" class="text-lg font-semibold">John Doe</p>
+
+                  <span class="inline-block rounded-[5px] bg-navy/10 px-2 py-0.5 text-xs font-semibold">Owner</span>
+
+                  <p id="header-contact" class="mt-1 text-sm">johndoe@example.com | +234 812 345 6789</p>
+
+                </div>
+
+              </div>
+
+              <button type="button" id="edit-profile" class="btn-outline">Edit Profile</button>
+
+            </div>
+
+
+
+            <div class="p-5">
+
+              <p class="mb-3 text-base font-semibold">Personal Information</p>
+
+              <dl class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
+
+                <div><dt class="text-navy/70">Full Name</dt><dd id="pv-name" class="font-semibold">John Doe</dd></div>
+
+                <div><dt class="text-navy/70">Phone Number</dt><dd id="pv-phone" class="font-semibold">+234 812 345 6789</dd></div>
+
+                <div><dt class="text-navy/70">Email Address</dt><dd id="pv-email" class="font-semibold">johndoe@example.com</dd></div>
+
+                <div><dt class="text-navy/70">Role</dt><dd class="font-semibold">Owner</dd></div>
+
+                <div><dt class="text-navy/70">Business</dt><dd class="font-semibold">Storewise Pharmacy &amp; Retail</dd></div>
+
+                <div><dt class="text-navy/70">Member Since</dt><dd class="font-semibold">Apr 2025</dd></div>
+
+              </dl>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+            <div class="card flex flex-col gap-4 p-5">
+
+              <p class="text-base font-semibold">Edit Personal Information</p>
+
+              <div>
+
+                <label for="in-name" class="field-label">Full Name</label>
+
+                <input id="in-name" class="field" value="John Doe" autocomplete="name" />
+
+              </div>
+
+              <div>
+
+                <label for="in-email" class="field-label">Email Address</label>
+
+                <input id="in-email" type="email" class="field" value="johndoe@example.com" autocomplete="email" />
+
+              </div>
+
+              <div>
+
+                <label for="in-phone" class="field-label">Phone Number</label>
+
+                <input id="in-phone" type="tel" class="field" value="+234 812 345 6789" autocomplete="tel" />
+
+              </div>
+
+              <button type="button" id="save-profile" class="btn-primary w-full">Save Changes</button>
+
+            </div>
+
+
+
+            <form id="pw-form" class="card flex flex-col gap-4 p-5" novalidate>
+
+              <p class="text-base font-semibold">Change Password</p>
+
+              <div>
+
+                <label for="pw0" class="field-label">Current Password</label>
+
+                <div class="relative">
+
+                  <input id="pw0" type="password" class="field mt-1 pr-11" placeholder="Enter current password" autocomplete="current-password" />
+
+                  <button type="button" class="eye absolute right-1 top-1 grid h-[39px] w-10 place-items-center rounded-[5px] hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy" aria-label="Show password">
+
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.500-7 10-7 10 7 10 7-3.500 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div>
+
+                <label for="pw1" class="field-label">New Password</label>
+
+                <div class="relative">
+
+                  <input id="pw1" type="password" class="field mt-1 pr-11" placeholder="Enter new password" autocomplete="new-password" />
+
+                  <button type="button" class="eye absolute right-1 top-1 grid h-[39px] w-10 place-items-center rounded-[5px] hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy" aria-label="Show password">
+
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.500-7 10-7 10 7 10 7-3.500 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div>
+
+                <label for="pw2" class="field-label">Confirm New Password</label>
+
+                <div class="relative">
+
+                  <input id="pw2" type="password" class="field mt-1 pr-11" placeholder="Confirm new password" autocomplete="new-password" />
+
+                  <button type="button" class="eye absolute right-1 top-1 grid h-[39px] w-10 place-items-center rounded-[5px] hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy" aria-label="Show password">
+
+                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.500-7 10-7 10 7 10 7-3.500 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+
+                  </button>
+
+                </div>
+
+              </div>
+
+              <p id="pw-error" role="alert" hidden class="text-sm text-accent-red"></p>
+
+              <button type="submit" class="btn-primary w-full">Update Password</button>
+
+            </form>
+
+          </div>
+
+
+
+          <div class="mt-4 flex flex-col gap-3 rounded-[10px] bg-navy/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+
+            <div>
+
+              <p class="flex items-center gap-2 text-base font-semibold">
+
+                <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.500 2.500 20h19z"/><path d="M12 10v5M12 17.500v.01"/></svg>
+
+                Danger Zone
+
+              </p>
+
+              <p class="text-sm">Permanently delete your account and all associated data.</p>
+
+            </div>
+
+            <button type="button" id="delete-account" class="btn-outline">Delete Account</button>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ---------- TEAMS & ROLES ---------- -->
+
+        <div id="view-teams" class="view" hidden>
+
+
+
+          <!-- Shown when there are no team members at all -->
+
+          <div id="teams-empty" hidden class="flex flex-col items-center justify-center gap-[30px] py-12 text-center lg:px-6">
+
+            <div class="flex size-[180px] items-center justify-center rounded-full bg-navy/10 sm:size-[250px]">
+
+              <svg class="h-[58px] w-[64px] sm:h-[81px] sm:w-[90px]" viewBox="0 0 90 81" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="45" cy="11" r="8"/><circle cx="14" cy="20" r="7"/><circle cx="76" cy="20" r="7"/><path d="M32 38A4 4 0 0 1 36 34H54A4 4 0 0 1 58 38V57C58 68 52 73 45 77C38 73 32 68 32 57Z"/><path d="M22 38H18A12 12 0 0 0 6 50V61A8 8 0 0 0 14 69H22"/><path d="M68 38H72A12 12 0 0 1 84 50V61A8 8 0 0 1 76 69H68"/></svg>
+
+            </div>
+
+            <div class="flex max-w-[579px] flex-col items-center gap-5">
+
+              <h2 class="font-grotesk text-[28px] font-bold leading-[38px] sm:text-[36px] sm:leading-[46px]">No team members yet</h2>
+
+              <p class="text-base font-medium sm:text-xl sm:leading-[30px]">Invite your first team member to help manage your business.</p>
+
+            </div>
+
+            <button type="button" data-open-invite class="flex h-16 items-center justify-center gap-[5px] whitespace-nowrap rounded-[5px] bg-navy px-5 text-[22px] font-semibold text-white hover:bg-[#1b4a85] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy sm:w-[296px]">
+
+              <svg class="size-[34px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="7.5" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 10.5-5"/><path d="M18 14.5v6M15 17.5h6"/></svg>
+
+              Invite Team Member
+
+            </button>
+
+          </div>
+
+
+
+          <div id="teams-content">
+
+            <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
+
+              <div class="rounded-[10px] bg-navy p-4 text-white">
+
+                <p class="text-sm font-semibold">Team Members</p>
+
+                <p id="count-total" class="font-grotesk text-3xl font-bold">5</p>
+
+                <p class="text-xs">Active team members</p>
+
+              </div>
+
+              <div class="card p-4">
+
+                <p class="text-sm font-semibold">Owner/Admins</p>
+
+                <p id="count-owner" class="font-grotesk text-3xl font-bold">1</p>
+
+                <p class="text-xs">Full access to all features</p>
+
+              </div>
+
+              <div class="card p-4">
+
+                <p class="text-sm font-semibold">Managers</p>
+
+                <p id="count-manager" class="font-grotesk text-3xl font-bold">1</p>
+
+                <p class="text-xs">Business and inventory access</p>
+
+              </div>
+
+              <div class="card p-4">
+
+                <p class="text-sm font-semibold">Attendants</p>
+
+                <p id="count-attendant" class="font-grotesk text-3xl font-bold">3</p>
+
+                <p class="text-xs">Limited access (sales &amp; inventory)</p>
+
+              </div>
+
+            </div>
+
+
+
+            <h2 class="mt-6 font-grotesk text-2xl font-bold">Team Members</h2>
+
+            <div class="mt-3 flex flex-col gap-3 sm:flex-row">
+
+              <label class="flex h-[42px] flex-1 items-center gap-2.5 rounded-[5px] border border-navy/50 px-[15px] focus-within:border-navy focus-within:ring-1 focus-within:ring-navy">
+
+                <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+
+                <span class="sr-only">Search members</span>
+
+                <input id="member-search" type="search" placeholder="Search members..." class="w-full bg-transparent text-sm outline-none placeholder:text-navy" />
+
+              </label>
+
+              <label>
+
+                <span class="sr-only">Filter by role</span>
+
+                <select id="role-filter" class="h-[42px] w-full rounded-[5px] border border-navy/50 bg-white px-3 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy sm:w-auto">
+
+                  <option>All Roles</option><option>Owner</option><option>Manager</option><option>Attendant</option>
+
+                </select>
+
+              </label>
+
+            </div>
+
+
+
+            <div class="mt-3 overflow-x-auto">
+
+              <table class="w-full min-w-[760px] text-left text-sm">
+
+                <thead class="bg-panel">
+
+                  <tr>
+
+                    <th scope="col" class="px-3 py-3 font-semibold">Name</th>
+
+                    <th scope="col" class="px-3 py-3 font-semibold">Email</th>
+
+                    <th scope="col" class="px-3 py-3 font-semibold">Role</th>
+
+                    <th scope="col" class="px-3 py-3 font-semibold">Status</th>
+
+                    <th scope="col" class="px-3 py-3 font-semibold">Last Active</th>
+
+                    <th scope="col" class="px-3 py-3 text-right font-semibold">Actions</th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody id="member-body"></tbody>
+
+              </table>
+
+              <p id="no-members" hidden class="py-6 text-center text-sm">No members match your search. Try a different name or role.</p>
+
+            </div>
+
+
+
+            <div class="mt-5 flex flex-col gap-3 rounded-[10px] bg-navy/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+
+              <div>
+
+                <p class="flex items-center gap-2 text-base font-semibold">
+
+                  <svg class="size-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v5M12 8v.01"/></svg>
+
+                  Need help with team setup?
+
+                </p>
+
+                <p class="text-sm">You can always edit roles and permissions later. If you're unsure about a role, check the role permissions guide.</p>
+
+              </div>
+
+              <button type="button" class="btn-outline shrink-0" data-toast="The role guide is not available in this demo.">View Role Guide</button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ---------- CUSTOM PERMISSIONS (opened from the ⋮ button in the team table) ---------- -->
+
+        <div id="view-permissions" class="view" hidden>
+
+          <h2 class="font-grotesk text-2xl font-bold">Custom Permissions</h2>
+
+          <p class="mb-4 text-sm font-medium">Manage individual access to Stockwise Africa features</p>
+
+          <div class="member-card"></div>
+
+          <div id="perm-groups" class="mt-4 flex flex-col gap-3"></div>
+
+          <div class="mt-5 flex justify-end gap-3">
+
+            <button type="button" id="cancel-perms" class="btn-outline">Cancel</button>
+
+            <button type="button" id="save-perms" class="btn-primary">Save Changes</button>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ---------- NOTIFICATIONS ---------- -->
+
+        <div id="view-notifications" class="view" hidden>
+
+          <h2 class="font-grotesk text-2xl font-bold">Notification alerts</h2>
+
+          <p class="mb-4 text-sm font-medium">Stay on top of what matters, without the noise.</p>
+
+          <div class="member-card"></div>
+
+          <div id="notif-groups" class="mt-4 flex flex-col gap-3"></div>
+
+          <div class="mt-5 flex justify-end gap-3">
+
+            <button type="button" id="cancel-notif" class="btn-outline">Cancel</button>
+
+            <button type="button" id="save-notif" class="btn-primary">Save Changes</button>
+
+          </div>
+
+        </div>
+
+
+
+        <!-- ---------- LEGAL (filled in by JavaScript) ---------- -->
+
+        <div id="view-terms" class="view" hidden></div>
+
+        <div id="view-privacy" class="view" hidden></div>
+
+
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+
+  </div><!-- /#app-shell -->
+
+
+
+  <!-- ================= LOGGED-OUT LEGAL VIEW =================
+
+       Open teams.html#public-terms or teams.html#public-privacy (for example from the sign-up page). -->
+
+  <div id="public-legal" hidden class="min-h-screen bg-white">
+
+    <header class="no-print border-b border-navy/20">
+
+      <a href="#public-terms" class="mx-auto flex max-w-[900px] items-center gap-[15px] px-4 py-5" aria-label="Stockwise Africa">
+
+        <span class="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full bg-panel">
+
+          <img src="logo.png" alt="" class="h-[26px] w-[35px] object-contain" />
+
+        </span>
+
+        <span class="font-grotesk text-2xl font-medium">Stockwise Africa</span>
+
+      </a>
+
+    </header>
+
+    <main id="public-doc" class="mx-auto max-w-[900px] px-4 py-10"></main>
+
+  </div>
+
+
+
+  <!-- ================= INVITE DIALOG ================= -->
+
+  <dialog id="invite-dialog" aria-labelledby="invite-title" class="m-auto w-[calc(100%-2rem)] max-w-md rounded-[7px] p-6 text-navy backdrop:bg-black/40">
+
+    <div class="flex items-start justify-between gap-4">
+
+      <h2 id="invite-title" class="font-grotesk text-2xl font-bold">Invite Team Member</h2>
+
+      <button id="invite-close" type="button" aria-label="Close" class="rounded-[5px] p-1 hover:bg-navy/10 focus-visible:outline-2 focus-visible:outline-navy">
+
+        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+
+      </button>
+
+    </div>
+
+
+
+    <form id="invite-form" novalidate class="mt-4 flex flex-col gap-3">
+
+      <div>
+
+        <label for="invite-email" class="text-sm font-semibold">Email address</label>
+
+        <input id="invite-email" type="email" autocomplete="off" aria-describedby="invite-error" class="mt-1 h-[39px] w-full rounded-[5px] border border-navy/50 px-3 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy" />
+
+        <p id="invite-error" role="alert" class="mt-1 hidden text-xs text-accent-red"></p>
+
+      </div>
+
+      <div>
+
+        <label for="invite-role" class="text-sm font-semibold">Role</label>
+
+        <select id="invite-role" class="mt-1 h-[39px] w-full rounded-[5px] border border-navy/50 bg-white px-2 text-sm outline-none focus:border-navy focus:ring-1 focus:ring-navy">
+
+          <option value="Admin">Admin</option>
+
+          <option value="Manager">Manager</option>
+
+          <option value="Staff" selected>Staff</option>
+
+        </select>
+
+      </div>
+
+
+
+      <p id="invite-success" role="status" class="hidden rounded-[5px] bg-panel p-3 text-sm font-medium"></p>
+
+
+
+      <div class="mt-2 flex justify-end gap-3">
+
+        <button id="invite-cancel" type="button" class="h-10 rounded-[5px] border border-navy/50 px-4 text-sm font-semibold hover:bg-navy/5 focus-visible:outline-2 focus-visible:outline-navy">Cancel</button>
+
+        <button type="submit" class="h-10 rounded-[5px] bg-navy px-4 text-sm font-semibold text-white hover:bg-[#1b4a85] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy">Send Invitation</button>
+
+      </div>
+
+    </form>
+
+  </dialog>
+
+
+
+  <!-- Floating message (fixed position, so it never shifts the layout) -->
+
+  <p id="status-message" role="status" class="no-print pointer-events-none fixed bottom-6 left-1/2 z-50 hidden max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-[5px] bg-navy px-4 py-2 text-sm font-medium text-white shadow-lg lg:ml-[175px]"></p>
+
+
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
+
