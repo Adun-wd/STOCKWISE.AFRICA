@@ -509,6 +509,7 @@ const statusMessage = document.getElementById("status-message");
 
 
 const appShell = document.getElementById("app-shell");
+const loginScreen = document.getElementById("login-screen");
 
 const pageTitle = document.getElementById("page-title");
 
@@ -784,19 +785,204 @@ function showPublic(key) {
 
 }
 
+// ---------- Demo sign-in gate ----------
+const loginForm = document.getElementById("login-form");
+const loginEmail = document.getElementById("login-email");
+const loginPassword = document.getElementById("login-password");
+const loginPanel = document.getElementById("login-panel");
+const signupPanel = document.getElementById("signup-panel");
+const signupForm = document.getElementById("signup-form");
+const loginIsActive = () => sessionStorage.getItem("stockwiseAuthenticated") === "true";
+const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const clearAuthErrors = (panel) => {
+  panel.querySelectorAll('[role="alert"]').forEach((node) => { node.textContent = ""; node.classList.add("hidden"); });
+  panel.querySelectorAll("[aria-invalid='true']").forEach((input) => input.removeAttribute("aria-invalid"));
+};
+document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const showSignup = button.dataset.authMode === "signup";
+    loginPanel.hidden = showSignup;
+    signupPanel.hidden = !showSignup;
+    clearAuthErrors(loginPanel);
+    clearAuthErrors(signupPanel);
+    (showSignup ? document.getElementById("signup-business") : loginEmail).focus();
+  });
+});
+document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const input = document.getElementById(button.dataset.passwordToggle);
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    button.textContent = show ? "Hide" : "Show";
+    button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+    button.setAttribute("aria-pressed", String(show));
+  });
+});
+try {
+  const rememberedEmail = localStorage.getItem("stockwiseRememberedEmail");
+  if (rememberedEmail) {
+    loginEmail.value = rememberedEmail;
+    document.getElementById("login-remember").checked = true;
+  }
+} catch (error) {}
+
+document.getElementById("login-toggle").addEventListener("click", () => {
+  const show = loginPassword.type === "password";
+  loginPassword.type = show ? "text" : "password";
+  document.getElementById("login-toggle").setAttribute("aria-label", show ? "Hide password" : "Show password");
+  document.getElementById("login-toggle").setAttribute("aria-pressed", String(show));
+});
+
+loginForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value;
+  const emailError = document.getElementById("login-email-error");
+  const passwordError = document.getElementById("login-password-error");
+  const formError = document.getElementById("login-error");
+  [emailError, passwordError, formError].forEach((node) => { node.textContent = ""; node.classList.add("hidden"); });
+  [loginEmail, loginPassword].forEach((input) => input.removeAttribute("aria-invalid"));
+  let valid = true;
+  if (!email) {
+    emailError.textContent = "Enter your email address.";
+    emailError.classList.remove("hidden");
+    loginEmail.setAttribute("aria-invalid", "true");
+    valid = false;
+  } else if (!validEmail(email)) {
+    emailError.textContent = "Enter a valid email address.";
+    emailError.classList.remove("hidden");
+    loginEmail.setAttribute("aria-invalid", "true");
+    valid = false;
+  }
+  if (!password) {
+    passwordError.textContent = "Enter your password.";
+    passwordError.classList.remove("hidden");
+    loginPassword.setAttribute("aria-invalid", "true");
+    valid = false;
+  }
+  if (!valid) return;
+  try {
+    let profile = null;
+    try {
+      const profiles = JSON.parse(localStorage.getItem("stockwiseDemoProfiles") || "{}");
+      profile = profiles[email.toLowerCase()] || null;
+    } catch (error) {}
+    sessionStorage.setItem("stockwiseAuthenticated", "true");
+    sessionStorage.setItem("stockwiseUser", JSON.stringify({ email, name: profile?.name || email.split("@")[0], business: profile?.business || "", phone: profile?.phone || "", role: profile?.role || "Owner" }));
+    if (document.getElementById("login-remember").checked) localStorage.setItem("stockwiseRememberedEmail", email);
+    else localStorage.removeItem("stockwiseRememberedEmail");
+  } catch (error) {
+    formError.textContent = "Your browser blocked sign-in storage. Allow site storage and try again.";
+    formError.classList.remove("hidden");
+    return;
+  }
+  loginPassword.value = "";
+  location.hash = "home";
+  route();
+});
+
+signupForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  clearAuthErrors(signupPanel);
+  const businessInput = document.getElementById("signup-business");
+  const emailInput = document.getElementById("signup-email");
+  const phoneInput = document.getElementById("signup-phone");
+  const passwordInput = document.getElementById("signup-password");
+  const confirmInput = document.getElementById("signup-confirm");
+  const termsInput = document.getElementById("signup-terms");
+  const business = businessInput.value.trim();
+  const email = emailInput.value.trim().toLowerCase();
+  const phone = phoneInput.value.trim();
+  const phoneDigits = phone.replace(/[\s()+-]/g, "");
+  const password = passwordInput.value;
+  const confirm = confirmInput.value;
+  const showFieldError = (input, message) => {
+    const node = document.getElementById(`${input.id}-error`);
+    node.textContent = message;
+    node.classList.remove("hidden");
+    input.setAttribute("aria-invalid", "true");
+  };
+  let valid = true;
+  if (!business) { showFieldError(businessInput, "Enter your business name."); valid = false; }
+  if (!email) { showFieldError(emailInput, "Enter your email address."); valid = false; }
+  else if (!validEmail(email)) { showFieldError(emailInput, "Enter a valid email address."); valid = false; }
+  if (!phone) { showFieldError(phoneInput, "Enter your phone number."); valid = false; }
+  else if (!/^\d{10,15}$/.test(phoneDigits)) { showFieldError(phoneInput, "Enter a valid phone number."); valid = false; }
+  if (password.length < 8) { showFieldError(passwordInput, "Use a password with at least 8 characters."); valid = false; }
+  if (!confirm) { showFieldError(confirmInput, "Confirm your password."); valid = false; }
+  else if (confirm !== password) { showFieldError(confirmInput, "The passwords do not match."); valid = false; }
+  if (!termsInput.checked) { showFieldError(termsInput, "Accept the Terms of Service and Privacy Policy to continue."); valid = false; }
+  if (!valid) return;
+  const formError = document.getElementById("signup-error");
+  try {
+    const profiles = JSON.parse(localStorage.getItem("stockwiseDemoProfiles") || "{}");
+    if (profiles[email]) {
+      showFieldError(emailInput, "An account with this email already exists. Log in instead.");
+      return;
+    }
+    // This browser-only prototype stores the profile, never the password.
+    const name = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    profiles[email] = { name, email, business, phone, role: "Owner" };
+    localStorage.setItem("stockwiseDemoProfiles", JSON.stringify(profiles));
+    sessionStorage.setItem("stockwiseAuthenticated", "true");
+    sessionStorage.setItem("stockwiseUser", JSON.stringify({ name, email, business, phone, role: "Owner" }));
+  } catch (error) {
+    formError.textContent = "Your browser blocked account storage. Allow site storage and try again.";
+    formError.classList.remove("hidden");
+    return;
+  }
+  signupForm.reset();
+  location.hash = "home";
+  route();
+});
+
 
 
 function route() {
 
   const hash = location.hash.slice(1);
 
+  if (hash === "public-terms" || hash === "public-privacy") {
+    loginScreen.hidden = true;
+    showPublic(hash === "public-privacy" ? "privacy" : "terms");
+    return;
+  }
+
+  if (!loginIsActive()) {
+    loginScreen.hidden = false;
+    appShell.hidden = true;
+    publicLegal.hidden = true;
+    document.title = "Log In | Stockwise Africa";
+    return;
+  }
+
+  loginScreen.hidden = true;
+  appShell.hidden = false;
+
 
 
   const inventoryApp = document.getElementById("inventory-app");
   const settingsMain = document.getElementById("settings-main");
+  const dashboardApp = document.getElementById("dashboard-app");
   const salesApp = document.getElementById("sales-app");
   const alertsApp = document.getElementById("alerts-app");
   const reportsApp = document.getElementById("reports-app");
+  dashboardApp.hidden = true;
+  if (!hash || hash === "home" || hash === "login") {
+    publicLegal.hidden = true;
+    dashboardApp.hidden = false;
+    inventoryApp.hidden = true;
+    settingsMain.hidden = true;
+    salesApp.hidden = true;
+    alertsApp.hidden = true;
+    reportsApp.hidden = true;
+    document.title = "Home | Stockwise Africa";
+    setSidebarOpen(false);
+    updatePrimaryNav("home");
+    renderDashboard();
+    return;
+  }
+  dashboardApp.hidden = true;
   if (hash === "reports") {
     appShell.hidden = false;
     publicLegal.hidden = true;
@@ -856,16 +1042,6 @@ function route() {
 
   inventoryApp.hidden = true;
   settingsMain.hidden = false;
-
-  if (hash === "public-terms" || hash === "public-privacy") {
-
-    showPublic(hash === "public-privacy" ? "privacy" : "terms");
-
-    return;
-
-  }
-
-
 
   publicLegal.hidden = true;
 
@@ -1609,7 +1785,8 @@ document.addEventListener("click", function (event) {
 function updatePrimaryNav(active) {
   document.querySelectorAll("#sidebar .nav-link").forEach(function (link) {
     const href = link.getAttribute("href");
-    const isActive = (active === "inventory" && href === "#inventory") ||
+    const isActive = (active === "home" && href === "#home") ||
+      (active === "inventory" && href === "#inventory") ||
       (active === "sales" && href === "#sales") ||
       (active === "alerts" && href === "#alerts") ||
       (active === "reports" && href === "#reports") ||
@@ -1687,13 +1864,12 @@ document.addEventListener("keydown", function (event) {
 // ---------- Logout ----------
 
 document.getElementById("logout-button").addEventListener("click", function () {
-
-  if (confirm("Are you sure you want to log out?")) {
-
-    alert("You have been logged out. (Prototype: no real login yet.)");
-
-  }
-
+  try {
+    sessionStorage.removeItem("stockwiseAuthenticated");
+    sessionStorage.removeItem("stockwiseUser");
+  } catch (error) {}
+  location.hash = "login";
+  route();
 });
 
 
@@ -1778,6 +1954,82 @@ function salesForRange(from, to) {
   }
   return [...existing, ...demo].sort((a, b) => (b.day + b.time).localeCompare(a.day + a.time));
 }
+
+function renderDashboard() {
+  const rangeSelect = document.getElementById("dashboard-range");
+  const rangeDays = rangeSelect.value === "today" ? 1 : Number(rangeSelect.value) || 7;
+  const to = saleToday();
+  const from = saleAddDays(to, -(rangeDays - 1));
+  const rows = salesForRange(from, to);
+  const total = rows.reduce((sum, sale) => sum + sale.total, 0);
+  const units = rows.reduce((sum, sale) => sum + sale.qty, 0);
+  const stockValue = saleProducts.reduce((sum, product) => sum + getSaleStock(product) * getSalePrice(product), 0);
+  const lowStock = saleProducts.filter((product) => getSaleStock(product) > 0 && getSaleStock(product) <= Number(product.reorderLevel || 0));
+  const outOfStock = saleProducts.filter((product) => getSaleStock(product) === 0).length;
+  const user = (() => { try { return JSON.parse(sessionStorage.getItem("stockwiseUser") || "{}"); } catch (error) { return {}; } })();
+  const fullName = String(user.name || user.email?.split("@")[0] || "John Doe").replace(/[._-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const firstName = fullName.split(/\s+/)[0] || "John";
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: saleTimeZone, hour: "2-digit", hourCycle: "h23" }).format(new Date()));
+  document.getElementById("dashboard-user-name").textContent = fullName;
+  document.getElementById("dashboard-first-name").textContent = firstName;
+  document.getElementById("dashboard-greeting").textContent = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  document.getElementById("dashboard-subtitle").textContent = rangeDays === 1 ? "Here’s what’s happening with your store today." : "Here’s what’s happening with your store in the last " + rangeDays + " days.";
+  document.getElementById("dashboard-sales-total").textContent = saleNaIra(total);
+
+  const stat = (label, value, note, dark) => '<li class="rounded-lg border p-4 ' + (dark ? 'border-[#17396b] bg-[#17396b] text-white' : 'border-slate-200 bg-white') + '"><p class="text-xs font-semibold">' + label + '</p><p class="mt-3 font-grotesk text-2xl font-bold ' + (dark ? '' : 'text-[#17396b]') + '">' + value + '</p><p class="mt-1 text-[10px] opacity-80">' + note + '</p></li>';
+  document.getElementById("dashboard-stats").innerHTML =
+    stat("Total Sales", saleNaIra(total), rangeDays === 1 ? "Today" : "Last " + rangeDays + " days", true) +
+    stat("Products Sold", units.toLocaleString(), "Units sold in this period") +
+    stat("Current Stock Value", saleNaIra(stockValue), saleProducts.length + " products in inventory") +
+    stat("Low Stock Items", lowStock.length, outOfStock + " out of stock", false);
+
+  const byDay = new Map();
+  for (let day = from; day <= to; day = saleAddDays(day, 1)) byDay.set(day, 0);
+  rows.forEach((sale) => byDay.set(sale.day, (byDay.get(sale.day) || 0) + sale.total));
+  const points = [...byDay.entries()];
+  const peak = Math.max(...points.map(([, amount]) => amount), 1);
+  const chart = points.length ? '<div class="flex h-40 items-end gap-1 border-b border-slate-200 px-1">' + points.map(([day, amount]) => {
+    const height = Math.max(amount ? 6 : 2, Math.round(amount / peak * 125));
+    return '<div class="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"><span class="hidden whitespace-nowrap rounded bg-slate-800 px-1.5 py-1 text-[9px] text-white group-hover:block">' + saleDateLabel(day, { month: "short", day: "numeric" }) + ': ' + saleNaIra(amount) + '</span><div title="' + saleDateLabel(day) + ': ' + saleNaIra(amount) + '" class="w-full max-w-8 rounded-t bg-[#2358b8]" style="height:' + height + 'px"></div><span class="text-[8px] text-slate-500">' + (rangeDays <= 7 ? saleDateLabel(day, { weekday: "short" }) : saleDateLabel(day, { month: "short", day: "numeric" })) + '</span></div>';
+  }).join("") + '</div>' : '<p class="py-12 text-center text-xs text-slate-500">No sales in this period.</p>';
+  document.getElementById("dashboard-chart").innerHTML = chart;
+
+  const statuses = [
+    ["In Stock", saleProducts.filter((product) => getSaleStock(product) > Number(product.reorderLevel || 0)).length, "bg-[#17396b]"],
+    ["Low Stock", lowStock.length, "bg-amber-500"],
+    ["Out of Stock", outOfStock, "bg-rose-500"],
+  ];
+  const denominator = Math.max(saleProducts.length, 1);
+  document.getElementById("dashboard-stock-status").innerHTML = statuses.map(([label, count, color]) =>
+    '<div class="mb-3"><div class="mb-1 flex justify-between text-xs"><span>' + label + '</span><b>' + count + '</b></div><div class="h-2 overflow-hidden rounded-full bg-slate-100"><div class="h-full ' + color + '" style="width:' + Math.min(100, Math.round(count / denominator * 100)) + '%"></div></div></div>'
+  ).join("") + '<p class="mt-3 text-[10px] text-slate-500">' + saleProducts.length + ' products total. Status is based on each product’s reorder level.</p>';
+
+  document.getElementById("dashboard-recent-sales").innerHTML = rows.slice(0, 5).map((sale) =>
+    '<tr data-dashboard-search="' + esc(sale.product.toLowerCase()) + '"><td class="px-2 py-2">' + saleDateLabel(sale.day, { month: "short", day: "numeric" }) + ', ' + esc(sale.time) + '</td><td class="px-2 py-2 font-medium">' + esc(sale.product) + '</td><td class="px-2 py-2">' + sale.qty + '</td><td class="px-2 py-2">' + saleNaIra(sale.total) + '</td></tr>'
+  ).join("") || '<tr><td colspan="4" class="px-2 py-6 text-center text-slate-500">No sales in this period.</td></tr>';
+  document.getElementById("dashboard-low-stock").innerHTML = lowStock.slice().sort((a, b) => getSaleStock(a) - getSaleStock(b)).slice(0, 5).map((product) =>
+    '<tr data-dashboard-search="' + esc(product.name.toLowerCase()) + '"><td class="px-2 py-2 font-medium">' + esc(product.name) + '</td><td class="px-2 py-2">' + getSaleStock(product) + '</td><td class="px-2 py-2">' + Number(product.reorderLevel || 0) + '</td></tr>'
+  ).join("") || '<tr><td colspan="3" class="px-2 py-6 text-center text-slate-500">Nothing is running low.</td></tr>';
+  document.getElementById("dashboard-live").textContent = "Dashboard updated. " + rows.length + " sales shown, " + lowStock.length + " low stock items.";
+  applyDashboardSearch();
+}
+
+function applyDashboardSearch() {
+  const query = document.getElementById("dashboard-search").value.trim().toLowerCase();
+  document.querySelectorAll("#dashboard-app [data-dashboard-search]").forEach((row) => {
+    row.classList.toggle("hidden", query && !row.dataset.dashboardSearch.includes(query));
+  });
+}
+
+document.getElementById("dashboard-range").addEventListener("change", renderDashboard);
+document.getElementById("dashboard-search").addEventListener("input", applyDashboardSearch);
+document.getElementById("dashboard-menu-button").addEventListener("click", () => setSidebarOpen(true));
+document.getElementById("dashboard-notifications").addEventListener("click", () => { location.hash = "alerts"; });
+document.getElementById("dashboard-add-sale").addEventListener("click", () => {
+  renderSaleProduct();
+  document.getElementById("done").classList.add("hidden");
+  document.getElementById("sale-entry-dialog").showModal();
+});
 
 function renderSales() {
   const rowsBody = document.getElementById("sales-rows");
